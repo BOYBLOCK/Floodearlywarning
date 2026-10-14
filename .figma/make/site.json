@@ -1,0 +1,10 @@
+{
+  "description": "This tool provides real-time flood risk assessments based on rainfall data, helping users take timely actions to mitigate flood impacts.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
