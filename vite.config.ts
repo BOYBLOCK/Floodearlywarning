@@ -422,7 +422,16 @@ function floodRiskApiPlugin(): Plugin {
 
   function handleAssess(req: any, res: any, next: any) {
     const url = req.url || ''
-    if (url.split('?')[0] !== '/api/assess') {
+    const pathname = (url.split('?')[0] || '').replace(/\/+$/, '')
+
+    if (pathname === '/api/health' || pathname.endsWith('/api/health')) {
+      res.statusCode = 200
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ status: 'ok', service: 'Vite Assessment Engine' }))
+      return
+    }
+
+    if (pathname !== '/api/assess' && !pathname.endsWith('/api/assess')) {
       return next()
     }
 

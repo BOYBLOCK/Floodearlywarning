@@ -795,18 +795,13 @@
 // export default App;
 
 import { FormEvent, ReactNode, useEffect, useState } from "react";
+import {
+  Assessment,
+  calculateFloodAssessment,
+  RiskLevel,
+} from "./utils/floodAssessment";
 
 type Mode = "intensity" | "depth";
-type RiskLevel = "normal" | "low" | "moderate" | "high";
-
-type Assessment = {
-  level: RiskLevel;
-  label: string;
-  summary: string;
-  actions: string[];
-  intensity: number;
-  runoff_m3s: number;
-};
 
 type Weather = {
   temperature: number;
@@ -1018,26 +1013,42 @@ function App() {
         : { rainfall_mm: rainfall, duration_hrs: duration };
 
     try {
-      const response = await fetch("/api/assess", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const isJson = (response.headers.get("content-type") || "").includes(
-        "application/json",
-      );
-      if (!isJson) {
-        throw new Error(
-          "Cannot reach the assessment server. Start the backend (python app.py) and try again.",
-        );
-      }
-      const data = await response.json();
+      let data: Assessment;
 
-      if (!response.ok) {
-        throw new Error(data.error || "We could not assess this reading.");
-      }
-      if (!Array.isArray(data.actions) || typeof data.label !== "string") {
-        throw new Error("The server sent an unexpected response.");
+      try {
+        const response = await fetch("/api/assess", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const isJson = (response.headers.get("content-type") || "").includes(
+          "application/json",
+        );
+        if (isJson) {
+          const resData = await response.json();
+          if (!response.ok) {
+            throw new Error(resData.error || "We could not assess this reading.");
+          }
+          if (!Array.isArray(resData.actions) || typeof resData.label !== "string") {
+            throw new Error("The server sent an unexpected response.");
+          }
+          data = resData;
+        } else {
+          // If server returns HTML (e.g. 404 fallback or static hosting), calculate client-side
+          data = calculateFloodAssessment(body);
+        }
+      } catch (backendErr: any) {
+        // If it's a specific input validation message, bubble it up
+        if (
+          backendErr?.message &&
+          (backendErr.message.includes("Duration") ||
+            backendErr.message.includes("Rainfall") ||
+            backendErr.message.includes("Enter a rainfall"))
+        ) {
+          throw backendErr;
+        }
+        // Fall back seamlessly to client-side hydrological assessment model
+        data = calculateFloodAssessment(body);
       }
 
       setAssessment(data);
@@ -1049,11 +1060,9 @@ function App() {
     } catch (requestError) {
       setAssessment(null);
       setError(
-        requestError instanceof TypeError
-          ? "Cannot reach the assessment server. Check that the backend is running."
-          : requestError instanceof Error
-            ? requestError.message
-            : "The assessment service is unavailable. Please try again.",
+        requestError instanceof Error
+          ? requestError.message
+          : "The assessment service is unavailable. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -1074,13 +1083,13 @@ function App() {
     serverStatus === "online"
       ? "bg-emerald-400"
       : serverStatus === "offline"
-        ? "bg-red-400"
+        ? "bg-amber-400"
         : "bg-slate-400";
   const statusText =
     serverStatus === "online"
-      ? "System online"
+      ? "Backend connected"
       : serverStatus === "offline"
-        ? "Server offline"
+        ? "Offline mode (ready)"
         : "Checking system…";
 
   const activeRisk = assessment
