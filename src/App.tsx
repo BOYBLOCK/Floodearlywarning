@@ -800,6 +800,7 @@ import {
   calculateFloodAssessment,
   RiskLevel,
 } from "./utils/floodAssessment";
+import FloodOutlook from "./FloodOutlook";
 
 type Mode = "intensity" | "depth";
 
@@ -1496,50 +1497,7 @@ function App() {
             </aside>
           </div>
         </div>
-
-        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-8">
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">
-            7-day outlook
-          </h2>
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Forecast daily rainfall totals for Oluyole. The risk level above is
-            based only on the reading you enter, not on this forecast.
-          </p>
-          {forecast.length > 0 ? (
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-              {forecast.map((day, i) => (
-                <div
-                  key={day.date}
-                  className="rounded-2xl bg-slate-50 p-3 text-center"
-                >
-                  <p className="text-xs font-bold text-slate-500">
-                    {i === 0
-                      ? "Today"
-                      : new Date(`${day.date}T12:00`).toLocaleDateString(
-                        "en-GB",
-                        { weekday: "short" },
-                      )}
-                  </p>
-                  <p className="mt-2 text-xs text-slate-500">
-                    {weatherDescription(day.code)}
-                  </p>
-                  <p className="mt-1 text-sm font-bold text-slate-800">
-                    {Math.round(day.max)}° / {Math.round(day.min)}°
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-cyan-700">
-                    {day.rain.toFixed(1)} mm
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-5 text-sm text-slate-400">
-              {weatherStatus === "error"
-                ? "Forecast unavailable."
-                : "Loading forecast…"}
-            </p>
-          )}
-        </section>
+        <FloodOutlook />
 
         <footer className="mt-10 flex flex-col gap-3 border-t border-slate-200 pt-6 text-xs leading-5 text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>Oluyole FloodWatch · Rainfall-induced runoff decision support</p>
@@ -1568,8 +1526,8 @@ function ModeButton({
       aria-pressed={active}
       onClick={onClick}
       className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition ${active
-          ? "bg-white text-slate-900 shadow-sm"
-          : "text-slate-500 hover:text-slate-800"
+        ? "bg-white text-slate-900 shadow-sm"
+        : "text-slate-500 hover:text-slate-800"
         }`}
     >
       {children}
