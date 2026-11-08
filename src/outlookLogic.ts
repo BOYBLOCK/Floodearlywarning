@@ -18,16 +18,22 @@ export type DayRain = {
   min: number;
 };
 
-export type Tone = "dry" | "light" | "moderate" | "substantial" | "heavy";
+export type Tone = "dry" | "watch" | "heavy";
 
 export type RainBand = { label: string; tone: Tone };
 
-/** Label a day from its forecast rainfall (replaces the weather-code label). */
+// Below this daily total a day is shown simply as "Dry". Small forecast
+// amounts are not reliable enough to report as rain.
+export const DRY_BELOW_MM = 25;
+
+/**
+ * Label a day from its forecast rainfall. No amounts are shown to the user.
+ * Quiet days read "Dry"; only a day expected to bring a lot of rain is flagged,
+ * so a real storm is never labelled dry.
+ */
 export function rainBand(mm: number): RainBand {
-  if (mm < 1) return { label: "Dry", tone: "dry" };
-  if (mm < 10) return { label: "Light rain", tone: "light" };
-  if (mm < 25) return { label: "Moderate rain", tone: "moderate" };
-  if (mm < HEAVY_MM) return { label: "Substantial rain", tone: "substantial" };
+  if (mm < DRY_BELOW_MM) return { label: "Dry", tone: "dry" };
+  if (mm < HEAVY_MM) return { label: "Heavy rain possible", tone: "watch" };
   return { label: "Heavy rain", tone: "heavy" };
 }
 

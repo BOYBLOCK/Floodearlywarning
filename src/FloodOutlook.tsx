@@ -27,10 +27,8 @@ const MIN_FOCUS_REFRESH_MS = 30 * 60 * 1000; // and when the tab is revisited
 type LoadStatus = "loading" | "ready" | "error";
 
 const toneStyles: Record<Tone, string> = {
-  dry: "bg-slate-200/70 text-slate-500",
-  light: "bg-cyan-100 text-cyan-800",
-  moderate: "bg-amber-100 text-amber-800",
-  substantial: "bg-orange-100 text-orange-800",
+  dry: "bg-emerald-50 text-emerald-700",
+  watch: "bg-amber-100 text-amber-800",
   heavy: "bg-red-100 text-red-700",
 };
 
@@ -363,14 +361,13 @@ export default function FloodOutlook() {
                 <p className="text-xs font-bold text-slate-500">
                   {i === 0 ? "Today" : shortWeekday(day.date)}
                 </p>
-                <p className="mt-2 text-xs text-slate-500">{band.label}</p>
-                <p className="mt-1 text-sm font-bold text-slate-800">
-                  {Math.round(day.max)}&deg; / {Math.round(day.min)}&deg;
-                </p>
                 <p
                   className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold ${toneStyles[band.tone]}`}
                 >
-                  {day.rain.toFixed(1)} mm
+                  {band.label}
+                </p>
+                <p className="mt-2 text-sm font-bold text-slate-800">
+                  {Math.round(day.max)}&deg; / {Math.round(day.min)}&deg;
                 </p>
               </div>
             );
